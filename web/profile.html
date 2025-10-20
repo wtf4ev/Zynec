@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zynec Profile</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-gray-200 min-h-screen flex items-center justify-center">
+
+<div class="w-full max-w-sm bg-gray-800 p-8 rounded-2xl shadow-2xl relative">
+    <!-- Profile Picture -->
+    <div class="profile-picture w-32 h-32 rounded-full bg-gray-600 flex items-center justify-center mx-auto mb-6 relative overflow-hidden">
+        <img id="profile-pfp-img" class="w-full h-full object-cover hidden" alt="Profile Picture">
+        <div id="profile-pfp-initials" class="w-full h-full flex items-center justify-center text-4xl font-bold text-white bg-purple-600"></div>
+    </div>
+
+    <!-- Username -->
+    <h2 id="profile-username" class="text-center text-3xl font-bold text-white mb-1"></h2>
+    <p id="profile-branch-sem" class="text-center text-gray-400 mb-2"></p>
+    <p id="profile-bio" class="text-center text-gray-300 mb-4 italic"></p>
+
+    <button id="edit-profile-btn" class="block mx-auto px-6 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white transition-colors">Edit Profile</button>
+    <button onclick="window.history.back()" class="block mx-auto mt-2 px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition-colors">Back</button>
+    <button onclick="logout()" class="block mx-auto mt-2 px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white transition-colors"><i class="fas fa-sign-out-alt"></i> Logout</button>
+</div>
+
+<!-- Edit Modal -->
+<div id="edit-profile-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
+    <div class="bg-gray-800 p-6 rounded-xl w-80">
+        <h3 class="text-white text-xl mb-4 font-bold">Edit Profile</h3>
+
+        <label class="text-gray-300 block mb-1">Profile Picture</label>
+        <div class="flex items-center space-x-2 mb-3">
+            <label for="profile-pic-input" class="px-3 py-2 bg-gray-700 text-gray-300 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors">
+                <i class="fas fa-camera"></i> Choose Photo
+            </label>
+            <input type="file" id="profile-pic-input" class="hidden" accept="image/*">
+            <span id="profile-pic-name" class="text-xs text-gray-500 truncate">No photo selected</span>
+        </div>
+
+        <label class="text-gray-300 block mb-1">Branch</label>
+        <select id="branch" class="w-full mb-3 p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <option value="">Select Branch</option>
+            <option>Computer Science and Engineering</option>
+            <option>Cyber Security Engineering</option>
+            <option>AI/ML Engineering</option>
+        </select>
+
+        <label class="text-gray-300 block mb-1">Semester</label>
+        <select id="semester" class="w-full mb-3 p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <option value="">Select Semester</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option>
+            <option>5</option><option>6</option><option>7</option><option>8</option>
+        </select>
+
+        <label class="text-gray-300 block mb-1">Bio</label>
+        <textarea id="bio" placeholder="Tell us about yourself..." class="w-full mb-4 p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500" rows="3"></textarea>
+
+        <button id="save-profile" class="w-full p-2 bg-green-600 hover:bg-green-700 rounded text-white mb-2 transition-colors">Save</button>
+        <button id="close-modal" class="w-full p-2 bg-red-600 hover:bg-red-700 rounded text-white transition-colors">Cancel</button>
+    </div>
+</div>
+
+<script>
+let currentUsername = '';
+let selectedProfilePic = null;
+
+window.onload = async function() {
+    currentUsername = localStorage.getItem('username');
+    if (!currentUsername) return window.location.href = 'index.html';
+
+    await loadProfile();
+
+    // Profile picture file selection
+    const picInput = document.getElementById('profile-pic-input');
+    const picNameSpan = document.getElementById('profile-pic-name');
+    picInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            selectedProfilePic = this.files[0];
+            picNameSpan.textContent = this.files[0].name;
+        } else {
+            selectedProfilePic = null;
+            picNameSpan.textContent = 'No photo selected';
+        }
+    });
+
+    // Modal
+    const modal = document.getElementById('edit-profile-modal');
+    document.getElementById('edit-profile-btn').onclick = () => {
+        modal.classList.remove('hidden');
+    };
+    document.getElementById('close-modal').onclick = () => modal.classList.add('hidden');
+
+    document.getElementById('save-profile').onclick = async () => {
+        await saveProfile();
+    };
+};
+
+async function loadProfile() {
+    try {
+        const res = await fetch(`/api/user/${currentUsername}/profile`);
+        if (res.ok) {
+            const profile = await res.json();
+            displayProfile(profile);
+        } else {
+            // Profile doesn't exist yet, show defaults
+            document.getElementById('profile-username').textContent = currentUsername;
+            document.getElementById('profile-pfp-initials').textContent = currentUsername[0].toUpperCase();
+            document.getElementById('profile-branch-sem').textContent = 'No branch/semester set';
+            document.getElementById('profile-bio').textContent = 'No bio yet';
+        }
+    } catch (error) {
+        console.error('Error loading profile:', error);
+        document.getElementById('profile-username').textContent = currentUsername;
+        document.getElementById('profile-pfp-initials').textContent = currentUsername[0].toUpperCase();
+    }
+}
+
+function displayProfile(profile) {
+    document.getElementById('profile-username').textContent = profile.username;
+
+    // Display profile picture or initials
+    const imgElement = document.getElementById('profile-pfp-img');
+    const initialsElement = document.getElementById('profile-pfp-initials');
+
+    if (profile.profile_pic) {
+        imgElement.src = profile.profile_pic;
+        imgElement.classList.remove('hidden');
+        initialsElement.classList.add('hidden');
+    } else {
+        imgElement.classList.add('hidden');
+        initialsElement.textContent = profile.username[0].toUpperCase();
+        initialsElement.classList.remove('hidden');
+    }
+
+    const branchSem = profile.branch && profile.semester
+        ? `${profile.branch} - Semester ${profile.semester}`
+        : 'No branch/semester set';
+    document.getElementById('profile-branch-sem').textContent = branchSem;
+
+    document.getElementById('profile-bio').textContent = profile.bio || 'No bio yet';
+
+    // Pre-fill edit form
+    document.getElementById('branch').value = profile.branch || '';
+    document.getElementById('semester').value = profile.semester || '';
+    document.getElementById('bio').value = profile.bio || '';
+}
+
+async function saveProfile() {
+    const branch = document.getElementById('branch').value;
+    const semester = document.getElementById('semester').value;
+    const bio = document.getElementById('bio').value;
+
+    try {
+        const formData = new FormData();
+        formData.append('branch', branch);
+        formData.append('semester', semester);
+        formData.append('bio', bio);
+        if (selectedProfilePic) {
+            formData.append('profile_pic', selectedProfilePic);
+        }
+
+        const res = await fetch(`/api/user/${currentUsername}/profile`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (res.ok) {
+            alert('Profile updated successfully!');
+            document.getElementById('edit-profile-modal').classList.add('hidden');
+            document.getElementById('profile-pic-name').textContent = 'No photo selected';
+            selectedProfilePic = null;
+            await loadProfile();
+        } else {
+            const error = await res.json();
+            alert('Failed to update profile: ' + (error.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error saving profile:', error);
+        alert('Failed to update profile');
+    }
+}
+
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('username');
+        window.location.href = 'index.html';
+    }
+}
+</script>
+</body>
+</html>

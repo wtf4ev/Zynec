@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Root - Zynec</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input, button { margin: 5px; }
+        .post { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+        .comment { margin-left: 20px; font-size: 0.9em; color: #555; }
+    </style>
+</head>
+<body>
+    <h1>Root Community</h1>
+
+    <div id="loginDiv">
+        <h2>Login</h2>
+        <input id="username" placeholder="Username"><br>
+        <input id="password" type="password" placeholder="Password"><br>
+        <button onclick="login()">Login</button>
+        <p id="loginMsg" style="color:red;"></p>
+    </div>
+
+    <div id="rootDiv" style="display:none;">
+        <h2>Welcome, <span id="userSpan"></span></h2>
+        <button onclick="logout()">Logout</button>
+
+        <h3>Create Post</h3>
+        <textarea id="postContent" placeholder="Write your post here"></textarea><br>
+        <button onclick="createPost()">Post</button>
+
+        <h3>Posts</h3>
+        <div id="postsDiv"></div>
+    </div>
+
+    <script>
+        let currentUser = '';
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            axios.post('/login', null, { params: { username, password } })
+                .then(res => {
+                    if (res.data === "Login successful!") {
+                        currentUser = username;
+                        document.getElementById('loginDiv').style.display = 'none';
+                        document.getElementById('rootDiv').style.display = 'block';
+                        document.getElementById('userSpan').innerText = currentUser;
+                        fetchPosts();
+                    } else {
+                        document.getElementById('loginMsg').innerText = res.data;
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+
+        function logout() {
+            currentUser = '';
+            document.getElementById('loginDiv').style.display = 'block';
+            document.getElementById('rootDiv').style.display = 'none';
+        }
+
+        function fetchPosts() {
+            axios.get('/api/community/Root/posts')
+                .then(res => {
+                    const postsDiv = document.getElementById('postsDiv');
+                    postsDiv.innerHTML = '';
+                    res.data.forEach(post => {
+                        let postEl = document.createElement('div');
+                        postEl.className = 'post';
+                        postEl.innerHTML = `<strong>${post.author}</strong>: ${post.content}<br>
+                                            Likes: ${post.likes.length}<br>
+                                            <input placeholder="Comment" id="comment-${post.id}">
+                                            <button onclick="addComment(${post.id})">Comment</button>`;
+                        post.comments.forEach(c => {
+                            let cEl = document.createElement('div');
+                            cEl.className = 'comment';
+                            cEl.innerText = `${c.author}: ${c.comment}`;
+                            postEl.appendChild(cEl);
+                        });
+                        postsDiv.appendChild(postEl);
+                    });
+                })
+                .catch(err => console.error(err));
+        }
+
+        function createPost() {
+            const content = document.getElementById('postContent').value;
+            if (!content) return alert("Post content cannot be empty!");
+            axios.post('/api/community/Root/post', null, { params: { content } })
+                .then(res => {
+                    alert(res.data);
+                    document.getElementById('postContent').value = '';
+                    fetchPosts();
+                })
+                .catch(err => {
+                    if (err.response) alert(err.response.data);
+                    console.error(err);
+                });
+        }
+
+        function addComment(postId) {
+            const commentText = document.getElementById(`comment-${postId}`).value;
+            if (!commentText) return alert("Comment cannot be empty!");
+            axios.post(`/api/community/Root/post/${postId}/comment`, null, { params: { comment: commentText } })
+                .then(res => {
+                    alert(res.data);
+                    document.getElementById(`comment-${postId}`).value = '';
+                    fetchPosts();
+                })
+                .catch(err => {
+                    if (err.response) alert(err.response.data);
+                    console.error(err);
+                });
+        }
+    </script>
+</body>
+</html>

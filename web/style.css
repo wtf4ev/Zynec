@@ -1,0 +1,202 @@
+/* --- Global Styles --- */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    color: #64b5f6;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: #42a5f5;
+    text-decoration: underline;
+}
+
+/* --- Containers --- */
+.container {
+    max-width: 800px;
+    margin: 2rem auto;
+    background: #1e1e1e;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.form-container, .profile-container {
+    background: #1e1e1e;
+    padding: 3rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    width: 380px;
+    text-align: center;
+    transition: transform 0.3s ease-in-out;
+}
+
+.form-container:hover, .profile-container:hover {
+    transform: translateY(-5px);
+}
+
+/* --- Headers and Headings --- */
+h2 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.tagline {
+    font-size: 1.1rem;
+    color: #bdbdbd;
+    margin-bottom: 2rem;
+    font-weight: 400;
+    font-style: italic;
+}
+
+.page-header {
+    text-align: center;
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    color: #fff;
+}
+
+/* --- Navigation --- */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #1e1e1e;
+    border-bottom: 1px solid #2c2c2c;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 1000;
+}
+
+.user-profile-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+}
+
+.nav-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    border-bottom: 1px solid #2c2c2c;
+    padding-bottom: 0.5rem;
+}
+
+.nav-tabs a {
+    color: #64b5f6;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* --- Forms and Inputs --- */
+.input-group {
+    margin-bottom: 1.5rem;
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 1rem;
+    background-color: #2c2c2c;
+    border: 1px solid #3d3d3d;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input::placeholder, textarea::placeholder {
+    color: #9e9e9e;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #64b5f6;
+    box-shadow: 0 0 0 2px rgba(100, 181, 246, 0.2);
+    outline: none;
+}
+
+button {
+    width: 100%;
+    padding: 1.2rem;
+    background-color: #64b5f6;
+    color: #121212;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #42a5f5;
+}
+
+/* --- Dynamic Content --- */
+.post {
+    background: #2c2c2c;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.post h3 {
+    margin: 0 0 0.5rem;
+    color: #64b5f6;
+}
+
+/* --- Specific Components --- */
+.profile-picture, .profile-pic-small {
+    background-color: #3d3d3d;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-picture {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 1rem;
+}
+
+.profile-pic-small {
+    width: 40px;
+    height: 40px;
+}
+
+.role-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.owner-badge { background-color: #e57373; }
+.admin-badge { background-color: #64b5f6; }
+.moderator-badge { background-color: #4db6ac; }
+.member-badge { background-color: #9e9e9e; }

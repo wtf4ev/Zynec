@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zynec Login</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-gray-200 min-h-screen flex items-center justify-center">
+
+<div class="w-full max-w-md bg-gray-800 p-8 rounded-2xl shadow-2xl">
+    <h1 class="text-4xl font-bold text-center text-white mb-2">Zynec</h1>
+    <p class="text-gray-400 text-center text-lg italic mb-6">Let's zynnect</p>
+
+    <form id="login-form" class="space-y-4">
+        <input type="text" name="username" placeholder="Username" required
+            class="w-full px-4 py-3 rounded-xl bg-gray-700 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="password" name="password" placeholder="Password" required
+            class="w-full px-4 py-3 rounded-xl bg-gray-700 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <button type="submit"
+            class="w-full px-4 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors">Login</button>
+    </form>
+
+    <p class="text-center text-gray-400 mt-4">Don't have an account?
+        <a href="register.html" class="text-blue-400 hover:underline">Register here</a>
+    </p>
+</div>
+
+<script>
+const loginForm = document.getElementById('login-form');
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(loginForm);
+    const params = new URLSearchParams(formData);
+    try {
+        const res = await fetch('/login', { method: 'POST', body: params });
+        const text = await res.text();
+        if (res.status === 200 && text === "Login successful!") {
+            localStorage.setItem('username', formData.get('username'));
+            window.location.href = 'homepage.html';
+        } else {
+            alert(text);
+        }
+    } catch (err) {
+        alert("Server not reachable");
+    }
+});
+</script>
+</body>
+</html>

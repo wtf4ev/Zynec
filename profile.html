@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zynec Profile</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-gray-200 min-h-screen flex items-center justify-center">
+
+<div class="w-full max-w-sm bg-gray-800 p-8 rounded-2xl shadow-2xl relative">
+    <!-- Profile Picture -->
+    <div class="profile-picture w-32 h-32 rounded-full bg-gray-600 flex items-center justify-center mx-auto mb-6 relative overflow-hidden">
+        <img id="profile-pfp" src="default_pfp.png" alt="Profile Picture" class="w-full h-full object-cover">
+        <input type="file" id="pfp-input" accept="image/*" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
+        <div class="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full text-xs cursor-pointer">
+            <i class="fas fa-pencil-alt"></i>
+        </div>
+    </div>
+
+    <!-- Username -->
+    <h2 id="profile-username" class="text-center text-3xl font-bold text-white mb-1"></h2>
+    <p id="profile-branch-sem" class="text-center text-gray-400 mb-2"></p>
+    <p id="profile-bio" class="text-center text-gray-300 mb-4"></p>
+
+    <!-- Flairs -->
+    <div id="profile-flairs" class="flex flex-wrap justify-center gap-2 mb-6"></div>
+
+    <button id="edit-profile-btn" class="block mx-auto p-2 bg-green-600 rounded text-white">Edit Profile</button>
+</div>
+
+<!-- Edit Modal -->
+<div id="edit-profile-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
+    <div class="bg-gray-800 p-6 rounded-xl w-80">
+        <h3 class="text-white text-xl mb-2">Edit Profile</h3>
+
+        <label class="text-gray-300">Branch</label>
+        <select id="branch" class="w-full mb-2 p-2 rounded bg-gray-700 text-white">
+            <option>Computer Science and Engineering</option>
+            <option>Cyber Security Engineering</option>
+            <option>AI/ML Engineering</option>
+        </select>
+
+        <label class="text-gray-300">Semester</label>
+        <select id="semester" class="w-full mb-2 p-2 rounded bg-gray-700 text-white">
+            <option>1</option><option>2</option><option>3</option><option>4</option>
+            <option>5</option><option>6</option><option>7</option><option>8</option>
+        </select>
+
+        <label class="text-gray-300">Bio</label>
+        <textarea id="bio" class="w-full mb-2 p-2 rounded bg-gray-700 text-white"></textarea>
+
+        <label class="text-gray-300">Flairs (comma separated)</label>
+        <input id="flairs" class="w-full mb-4 p-2 rounded bg-gray-700 text-white">
+
+        <button id="save-profile" class="w-full p-2 bg-green-600 rounded text-white mb-2">Save</button>
+        <button id="close-modal" class="w-full p-2 bg-red-600 rounded text-white">Cancel</button>
+    </div>
+</div>
+
+<script>
+window.onload = function() {
+    const username = localStorage.getItem('username');
+    if (!username) return window.location.href = 'index.html';
+    document.getElementById('profile-username').textContent = username;
+
+    const branch = localStorage.getItem('branch') || '';
+    const semester = localStorage.getItem('semester') || '';
+    document.getElementById('profile-branch-sem').textContent = branch ? `${branch} - Semester ${semester}` : '';
+
+    const bio = localStorage.getItem('bio') || '';
+    document.getElementById('profile-bio').textContent = bio;
+
+    const flairs = localStorage.getItem('flairs') || '';
+    updateFlairs(flairs);
+
+    const pfp = localStorage.getItem('pfp');
+    if(pfp) document.getElementById('profile-pfp').src = pfp;
+
+    // Profile picture upload
+    const pfpInput = document.getElementById('pfp-input');
+    pfpInput.addEventListener('change', (e)=>{
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt){
+            const base64 = evt.target.result;
+            document.getElementById('profile-pfp').src = base64;
+            localStorage.setItem('pfp', base64);
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Modal
+    const modal = document.getElementById('edit-profile-modal');
+    document.getElementById('edit-profile-btn').onclick = () => {
+        modal.classList.remove('hidden');
+        document.getElementById('branch').value = branch;
+        document.getElementById('semester').value = semester;
+        document.getElementById('bio').value = bio;
+        document.getElementById('flairs').value = flairs;
+    };
+    document.getElementById('close-modal').onclick = () => modal.classList.add('hidden');
+
+    document.getElementById('save-profile').onclick = () => {
+        const branchValue = document.getElementById('branch').value;
+        const semesterValue = document.getElementById('semester').value;
+        const bioValue = document.getElementById('bio').value;
+        const flairsValue = document.getElementById('flairs').value;
+
+        localStorage.setItem('branch', branchValue);
+        localStorage.setItem('semester', semesterValue);
+        localStorage.setItem('bio', bioValue);
+        localStorage.setItem('flairs', flairsValue);
+
+        document.getElementById('profile-branch-sem').textContent = `${branchValue} - Semester ${semesterValue}`;
+        document.getElementById('profile-bio').textContent = bioValue;
+        updateFlairs(flairsValue);
+
+        modal.classList.add('hidden');
+    };
+
+    function updateFlairs(flairsString){
+        const container = document.getElementById('profile-flairs');
+        container.innerHTML = '';
+        if(!flairsString) return;
+        flairsString.split(',').forEach(f=>{
+            const span = document.createElement('span');
+            span.textContent = f.trim();
+            span.className = 'bg-blue-600 text-white px-3 py-1 rounded-full text-sm';
+            container.appendChild(span);
+        });
+    }
+};
+</script>
+</body>
+</html>
