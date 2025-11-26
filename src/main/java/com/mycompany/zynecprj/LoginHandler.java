@@ -26,7 +26,7 @@ public class LoginHandler {
     private static void initializeDatabase() {
         try (Connection conn = connect(); Statement stmt = conn.createStatement()) {
 
-            // USERS
+        
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS users (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "username TEXT UNIQUE," +
@@ -37,21 +37,21 @@ public class LoginHandler {
                     "semester INTEGER," +
                     "flairs TEXT)");
 
-            // COMMUNITIES
+           
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS communities (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "name TEXT UNIQUE," +
                     "icon TEXT," +
                     "owner TEXT)");
 
-            // MEMBERS
+           
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS members (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "username TEXT," +
                     "community_id INTEGER," +
                     "role TEXT)");
 
-            // POSTS
+           
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS posts (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "community_id INTEGER," +
@@ -61,7 +61,7 @@ public class LoginHandler {
                     "likes TEXT," +
                     "timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
 
-            // COMMENTS
+            
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS comments (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "post_id INTEGER," +
@@ -69,7 +69,7 @@ public class LoginHandler {
                     "comment TEXT," +
                     "timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
 
-            // POLLS
+            
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS polls (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "community_id INTEGER," +
@@ -78,30 +78,30 @@ public class LoginHandler {
                     "votes TEXT," +
                     "author TEXT)");
 
-            // Insert communities
+            
             stmt.executeUpdate("INSERT OR IGNORE INTO communities (name, icon, owner) VALUES " +
                     "('Root','root_icon.png','chaaru')," +
                     "('Foss Riet','foss_icon.png','chaaru')," +
                     "('Raise','raise_icon.png','chaaru')");
 
-            // Insert chaaru as admin/owner
+            
             stmt.executeUpdate("INSERT OR IGNORE INTO users (username,password_hash) VALUES ('chaaru','" +
                     BCrypt.hashpw("chaaru@06", BCrypt.gensalt()) + "')");
 
-            // Insert dummy users
+           
             for(int i=1;i<=7;i++){
                 stmt.executeUpdate("INSERT OR IGNORE INTO users (username, password_hash) VALUES ('user"+i+"','"+
                         BCrypt.hashpw("password",BCrypt.gensalt())+"')");
             }
 
-            // Assign chaaru as owner in all communities
+            
             ResultSet rs = stmt.executeQuery("SELECT id FROM communities");
             while(rs.next()){
                 int cid = rs.getInt("id");
                 stmt.executeUpdate("INSERT OR IGNORE INTO members (username,community_id,role) VALUES ('chaaru',"+cid+",'owner')");
             }
 
-            // Dummy members for Foss Riet (community_id=2)
+            
             int fossRietId = 2;
             stmt.executeUpdate("INSERT OR IGNORE INTO members (username, community_id, role) VALUES ('user1', " + fossRietId + ", 'member')");
             stmt.executeUpdate("INSERT OR IGNORE INTO members (username, community_id, role) VALUES ('user2', " + fossRietId + ", 'member')");
@@ -131,7 +131,7 @@ public class LoginHandler {
 
         initializeDatabase();
 
-        // REGISTER
+        
         post("/register",(req,res)->{
             String username = req.queryParams("username");
             String password = req.queryParams("password");
@@ -152,7 +152,7 @@ public class LoginHandler {
             }
         });
 
-        // LOGIN
+        
         post("/login",(req,res)->{
             String username = req.queryParams("username");
             String password = req.queryParams("password");
@@ -163,7 +163,7 @@ public class LoginHandler {
             }else return "Invalid credentials";
         });
 
-        // GET USER ROLE IN COMMUNITY
+        
         get("/api/community/:name/role",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -192,7 +192,7 @@ public class LoginHandler {
             }
         });
 
-        // GET COMMUNITY MEMBERS
+        
         get("/api/community/:name/members",(req,res)->{
             res.type("application/json");
             String communityName = req.params(":name");
@@ -217,7 +217,7 @@ public class LoginHandler {
             }
         });
 
-        // GET COMMUNITY POSTS
+       
         get("/api/community/:name/posts",(req,res)->{
             res.type("application/json");
             String communityName = req.params(":name");
@@ -246,7 +246,7 @@ public class LoginHandler {
             }
         });
 
-        // GET COMMUNITY POLLS
+       
         get("/api/community/:name/polls",(req,res)->{
             res.type("application/json");
             String communityName = req.params(":name");
@@ -275,7 +275,7 @@ public class LoginHandler {
             }
         });
 
-        // GET POST COMMENTS
+        
         get("/api/post/:id/comments",(req,res)->{
             res.type("application/json");
             int postId = Integer.parseInt(req.params(":id"));
@@ -303,7 +303,7 @@ public class LoginHandler {
             }
         });
 
-        // CREATE POST
+       
         post("/api/community/:name/post",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -314,21 +314,21 @@ public class LoginHandler {
             String username = session.attribute("username");
             String communityName = req.params(":name");
 
-            // Set multipart config for file upload
+           
             req.raw().setAttribute("org.eclipse.jetty.multipartConfig", new MultipartConfigElement("/temp"));
 
             String content = null;
             String mediaBase64 = null;
 
             try {
-                // Get content from multipart form
+                
                 Part contentPart = req.raw().getPart("content");
                 if(contentPart != null){
                     InputStream contentStream = contentPart.getInputStream();
                     content = new String(contentStream.readAllBytes());
                 }
 
-                // Get media file if present
+                
                 Part mediaPart = req.raw().getPart("media");
                 if(mediaPart != null && mediaPart.getSize() > 0){
                     InputStream mediaStream = mediaPart.getInputStream();
@@ -337,7 +337,7 @@ public class LoginHandler {
                     mediaBase64 = "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(mediaBytes);
                 }
             } catch (Exception e) {
-                // Fallback to regular form parameters if multipart fails
+                
                 content = req.queryParams("content");
                 mediaBase64 = req.queryParams("media");
             }
@@ -358,7 +358,7 @@ public class LoginHandler {
             }
         });
 
-        // CREATE COMMENT
+       
         post("/api/post/:id/comment",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -384,7 +384,7 @@ public class LoginHandler {
             }
         });
 
-        // DELETE COMMENT
+        
         delete("/api/comment/:id",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -430,7 +430,7 @@ public class LoginHandler {
             }
         });
 
-        // UPDATE COMMENT
+       
         post("/api/comment/:id/update",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -474,7 +474,7 @@ public class LoginHandler {
             }
         });
 
-        // LIKE/UNLIKE POST (Toggle)
+        
         post("/api/post/:id/like",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -495,17 +495,17 @@ public class LoginHandler {
                     String newLikes = "";
 
                     if(likes == null || likes.isEmpty()){
-                        // No likes yet, add user
+                       
                         newLikes = username;
                     }else{
-                        // Check if user already liked
+                        
                         List<String> likesList = new ArrayList<>(Arrays.asList(likes.split(",")));
                         if(likesList.contains(username)){
-                            // User already liked, remove (unlike)
+                           
                             likesList.remove(username);
                             newLikes = String.join(",", likesList);
                         }else{
-                            // User hasn't liked, add like
+                            
                             likesList.add(username);
                             newLikes = String.join(",", likesList);
                         }
@@ -522,7 +522,7 @@ public class LoginHandler {
             }
         });
 
-        // CREATE POLL
+       
         post("/api/community/:name/poll",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -551,7 +551,7 @@ public class LoginHandler {
             }
         });
 
-        // ASSIGN ADMIN ROLE
+       
         post("/api/community/:name/member/:username/assign-admin",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -572,7 +572,7 @@ public class LoginHandler {
                     "UPDATE members SET role = 'admin' " +
                     "WHERE username = ? AND community_id = (SELECT id FROM communities WHERE name = ?)")){
 
-                // Check if current user is owner
+               
                 checkRole.setString(1, communityName);
                 checkRole.setString(2, currentUser);
                 ResultSet rs = checkRole.executeQuery();
@@ -592,7 +592,7 @@ public class LoginHandler {
             }
         });
 
-        // DEMOTE ADMIN TO MEMBER
+       
         post("/api/community/:name/member/:username/demote-admin",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -613,7 +613,7 @@ public class LoginHandler {
                     "UPDATE members SET role = 'member' " +
                     "WHERE username = ? AND community_id = (SELECT id FROM communities WHERE name = ?)")){
 
-                // Check if current user is owner
+                
                 checkRole.setString(1, communityName);
                 checkRole.setString(2, currentUser);
                 ResultSet rs = checkRole.executeQuery();
@@ -633,7 +633,7 @@ public class LoginHandler {
             }
         });
 
-        // REMOVE MEMBER FROM COMMUNITY
+       
         post("/api/community/:name/member/:username/remove",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -658,7 +658,7 @@ public class LoginHandler {
                     "DELETE FROM members WHERE username = ? AND community_id = " +
                     "(SELECT id FROM communities WHERE name = ?)")){
 
-                // Check current user's role
+             
                 checkCurrentRole.setString(1, communityName);
                 checkCurrentRole.setString(2, currentUser);
                 ResultSet currentRs = checkCurrentRole.executeQuery();
@@ -668,7 +668,7 @@ public class LoginHandler {
                 }
                 String currentRole = currentRs.getString("role");
 
-                // Check target user's role
+                
                 checkTargetRole.setString(1, communityName);
                 checkTargetRole.setString(2, targetUsername);
                 ResultSet targetRs = checkTargetRole.executeQuery();
@@ -678,14 +678,13 @@ public class LoginHandler {
                 }
                 String targetRole = targetRs.getString("role");
 
-                // Prevent removing owner
+                
                 if("owner".equals(targetRole)){
                     res.status(403);
                     return gson.toJson(Map.of("error", "Cannot remove the owner from the community"));
                 }
 
-                // Owner can remove anyone (except owner which is already checked)
-                // Admin can remove members but not other admins or owner
+               
                 if("owner".equals(currentRole)){
                     removeMember.setString(1, targetUsername);
                     removeMember.setString(2, communityName);
@@ -706,7 +705,7 @@ public class LoginHandler {
             }
         });
 
-        // VOTE ON POLL (Toggle vote - vote or unvote)
+       
         post("/api/poll/:id/vote",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -732,23 +731,23 @@ public class LoginHandler {
                     if(votes == null || votes.isEmpty()) votes = "0,0,0,0";
                     String[] voteArray = votes.split(",");
 
-                    // Store as "username:optionIndex"
+                 
                     String userVote = username + ":" + optionIndex;
 
-                    // Check if user already voted on ANY option
+                  
                     String[] voterList = voters.isEmpty() ? new String[0] : voters.split(",");
                     int previousVoteIndex = -1;
                     List<String> updatedVoters = new ArrayList<>();
 
                     for(String voter : voterList){
                         if(voter.startsWith(username + ":")){
-                            // User already voted, extract which option
+                        
                             String[] parts = voter.split(":");
                             if(parts.length == 2){
                                 previousVoteIndex = Integer.parseInt(parts[1]);
-                                // If clicking same option, unvote
+                           
                                 if(previousVoteIndex == optionIndex){
-                                    // Decrement the vote count
+                                  
                                     int currentVotes = Integer.parseInt(voteArray[optionIndex]);
                                     if(currentVotes > 0){
                                         voteArray[optionIndex] = String.valueOf(currentVotes - 1);
@@ -762,25 +761,25 @@ public class LoginHandler {
                                     update.executeUpdate();
                                     return gson.toJson(Map.of("success", true, "action", "unvoted"));
                                 }
-                                // Don't add the old vote to updated list (we'll change it)
+                            
                             }
                         }else{
                             updatedVoters.add(voter);
                         }
                     }
 
-                    // If user voted on a different option, prevent it
+                  
                     if(previousVoteIndex != -1 && previousVoteIndex != optionIndex){
                         res.status(400);
                         return gson.toJson(Map.of("error", "You have already voted on this poll. Click your previous vote to unvote first."));
                     }
 
-                    // User hasn't voted yet, add their vote
+                   
                     int currentVotes = Integer.parseInt(voteArray[optionIndex]);
                     voteArray[optionIndex] = String.valueOf(currentVotes + 1);
                     String newVotes = String.join(",", voteArray);
 
-                    // Add user vote with option index
+                   
                     updatedVoters.add(userVote);
                     String newVoters = String.join(",", updatedVoters);
 
@@ -797,7 +796,7 @@ public class LoginHandler {
             }
         });
 
-        // DELETE POST
+       
         delete("/api/post/:id",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -824,7 +823,7 @@ public class LoginHandler {
                     String postAuthor = rs.getString("username");
                     String userRole = rs.getString("role");
 
-                    // Allow deletion if user is the author, owner, or admin
+                    
                     if(currentUser.equals(postAuthor) || "owner".equals(userRole) || "admin".equals(userRole)){
                         deleteComments.setInt(1, postId);
                         deleteComments.executeUpdate();
@@ -845,7 +844,7 @@ public class LoginHandler {
             }
         });
 
-        // DELETE POLL
+        
         delete("/api/poll/:id",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -871,7 +870,7 @@ public class LoginHandler {
                     String pollAuthor = rs.getString("author");
                     String userRole = rs.getString("role");
 
-                    // Allow deletion if user is the author, owner, or admin
+                   
                     if(currentUser.equals(pollAuthor) || "owner".equals(userRole) || "admin".equals(userRole)){
                         deletePoll.setInt(1, pollId);
                         deletePoll.executeUpdate();
@@ -890,7 +889,7 @@ public class LoginHandler {
             }
         });
 
-        // GET USER PROFILE
+       
         get("/api/user/:username/profile",(req,res)->{
             res.type("application/json");
             String username = req.params(":username");
@@ -917,7 +916,7 @@ public class LoginHandler {
             }
         });
 
-        // UPDATE USER PROFILE
+     
         post("/api/user/:username/profile",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -928,13 +927,13 @@ public class LoginHandler {
             String currentUser = session.attribute("username");
             String username = req.params(":username");
 
-            // Only allow users to edit their own profile
+           
             if(!currentUser.equals(username)){
                 res.status(403);
                 return gson.toJson(Map.of("error", "Permission denied"));
             }
 
-            // Set multipart config for file upload
+           
             req.raw().setAttribute("org.eclipse.jetty.multipartConfig", new MultipartConfigElement("/temp"));
 
             String bio = null;
@@ -943,7 +942,7 @@ public class LoginHandler {
             String profilePicBase64 = null;
 
             try {
-                // Get form data from multipart
+             
                 Part bioPart = req.raw().getPart("bio");
                 if(bioPart != null){
                     bio = new String(bioPart.getInputStream().readAllBytes());
@@ -959,7 +958,7 @@ public class LoginHandler {
                     semesterStr = new String(semesterPart.getInputStream().readAllBytes());
                 }
 
-                // Get profile picture if present
+             
                 Part profilePicPart = req.raw().getPart("profile_pic");
                 if(profilePicPart != null && profilePicPart.getSize() > 0){
                     byte[] picBytes = profilePicPart.getInputStream().readAllBytes();
@@ -967,7 +966,7 @@ public class LoginHandler {
                     profilePicBase64 = "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(picBytes);
                 }
             } catch (Exception e) {
-                // Fallback to regular form parameters
+             
                 bio = req.queryParams("bio");
                 branch = req.queryParams("branch");
                 semesterStr = req.queryParams("semester");
@@ -1000,7 +999,7 @@ public class LoginHandler {
             }
         });
 
-        // JOIN COMMUNITY
+       
         post("/api/community/:name/join",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -1020,7 +1019,7 @@ public class LoginHandler {
                     "INSERT INTO members (username, community_id, role) " +
                     "SELECT ?, c.id, 'member' FROM communities c WHERE c.name = ?")){
 
-                // Check if already a member
+               
                 checkMember.setString(1, communityName);
                 checkMember.setString(2, currentUser);
                 ResultSet rs = checkMember.executeQuery();
@@ -1029,7 +1028,7 @@ public class LoginHandler {
                     return gson.toJson(Map.of("error", "You are already a member of this community"));
                 }
 
-                // Add user as member
+               
                 insertMember.setString(1, currentUser);
                 insertMember.setString(2, communityName);
                 insertMember.executeUpdate();
@@ -1040,7 +1039,7 @@ public class LoginHandler {
             }
         });
 
-        // LEAVE COMMUNITY
+       
         post("/api/community/:name/leave",(req,res)->{
             res.type("application/json");
             Session session = req.session(false);
@@ -1060,7 +1059,7 @@ public class LoginHandler {
                     "DELETE FROM members WHERE username = ? AND community_id = " +
                     "(SELECT id FROM communities WHERE name = ?)")){
 
-                // Check if user is owner
+               
                 checkRole.setString(1, communityName);
                 checkRole.setString(2, currentUser);
                 ResultSet rs = checkRole.executeQuery();
@@ -1075,7 +1074,7 @@ public class LoginHandler {
                     return gson.toJson(Map.of("error", "You are not a member of this community"));
                 }
 
-                // Remove user from community
+               
                 deleteMember.setString(1, currentUser);
                 deleteMember.setString(2, communityName);
                 deleteMember.executeUpdate();
