@@ -48,7 +48,7 @@
 <body class="min-h-screen flex flex-col justify-start items-center">
 
 <div class="relative w-full overflow-hidden shadow-2xl pb-20">
-    <!-- Community Header -->
+  
     <div class="relative">
       <div class="h-64 rounded-b-3xl bg-cover bg-center" style="background-image: url('foss_bg_png');">
         <div class="absolute inset-0 bg-black opacity-50 rounded-b-3xl"></div>
@@ -75,7 +75,7 @@
       </div>
     </div>
     
-    <!-- Tabs -->
+ 
     <div class="flex bg-gray-900 rounded-t-3xl pt-2 pb-2 -mt-4 z-20 relative shadow-inner">
       <button onclick="showTab('posts')" id="posts-tab" class="flex-1 text-center py-3 text-lg font-semibold transition-all duration-300 text-white border-b-2 border-purple-500">
         Posts
@@ -85,17 +85,16 @@
       </button>
     </div>
 
-    <!-- Main Content -->
+
     <div class="container mx-auto mt-4 px-4 pb-20">
-      <!-- Posts Feed -->
+      
       <div id="posts-feed" class="space-y-4"></div>
 
-      <!-- Members List -->
       <div id="members-list" class="grid grid-cols-2 sm:grid-cols-3 gap-4 hidden"></div>
     </div>
 </div>
 
-<!-- Floating Action Button -->
+
 <div id="fab-container" class="fixed bottom-24 right-6 z-30 hidden">
     <div id="fab-menu" class="fab-menu hidden">
       <button onclick="openCreateModal('post'); toggleFabMenu();" class="bg-purple-600 text-white rounded-full p-3 shadow-lg hover:bg-purple-700 transition-colors duration-300 transform scale-100 hover:scale-110">
@@ -116,7 +115,7 @@
     </button>
 </div>
 
-<!-- Bottom Navigation Bar -->
+
 <div class="fixed bottom-0 w-full bg-gray-900 border-t border-gray-700 py-3 px-4 flex justify-around items-center rounded-t-3xl shadow-lg z-30">
   <a href="homepage.html" class="flex flex-col items-center text-xs text-purple-500">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
@@ -139,7 +138,7 @@
   </button>
 </div>
 
-<!-- Modals for Post and Poll Creation -->
+
 <div id="create-modal-post" class="modal hidden">
     <div class="bg-gray-800 p-6 rounded-xl shadow-lg w-11/12 max-w-sm">
         <h2 class="text-xl font-bold mb-4">Create New Post</h2>
@@ -171,7 +170,7 @@
     </div>
 </div>
 
-<!-- Comment Modal -->
+
 <div id="comment-modal" class="modal hidden">
     <div class="bg-gray-800 p-6 rounded-xl shadow-lg w-11/12 max-w-sm">
         <h2 class="text-xl font-bold mb-4">Add a Comment</h2>
@@ -183,7 +182,7 @@
     </div>
 </div>
 
-<!-- Settings Modal -->
+
 <div id="settings-modal" class="modal hidden">
     <div class="bg-gray-800 p-6 rounded-xl shadow-lg w-11/12 max-w-sm">
         <h2 class="text-xl font-bold mb-4">Settings</h2>
@@ -245,11 +244,11 @@
   async function fetchCommunityData() {
     await fetchUserRole();
     try {
-      // Fetch members
+      
       const membersRes = await fetch(`/api/community/${communityName}/members`);
       const members = await membersRes.json();
       
-      // Sort members
+     
       members.sort((a, b) => {
         const roleOrder = { owner: 1, admin: 2, member: 3 };
         return roleOrder[a.role] - roleOrder[b.role];
@@ -559,10 +558,10 @@
 
   function navigateToProfile(username) {
       console.log(`Navigating to the profile of user: ${username}`);
-      // Implement your navigation logic here
+    
   }
   
-  // Initial data fetch and render
+  
   fetchCommunityData();
   
 </script>
